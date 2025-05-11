@@ -1,12 +1,52 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# SmartCity-PWFE
 
-Currently, two official plugins are available:
+Interface web desenvolvida com React e Vite para o projeto integrador de cidade inteligente.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📌 Sobre o Projeto
 
-## Expanding the ESLint configuration
+Este projeto é a interface frontend do sistema de monitoramento de dados ambientais em uma cidade inteligente. Ele consome dados da API desenvolvida no backend para exibir informações como temperatura, umidade, luminosidade e contagem de pessoas em diferentes ambientes.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🗂 Estrutura do Repositório
+
+- `public/`: Arquivos públicos do projeto.
+- `src/`: Código-fonte da aplicação React.
+- `.gitignore`: Arquivos e pastas ignorados pelo Git.
+- `eslint.config.js`: Configuração do ESLint.
+- `index.html`: Página HTML principal.
+- `package.json`: Gerenciador de dependências do projeto.
+- `vite.config.js`: Configuração do Vite.
+
+## 🚀 Tecnologias Utilizadas
+
+- [React](https://reactjs.org/)
+- [Vite](https://vitejs.dev/)
+- [ESLint](https://eslint.org/)
+
+## 📦 Instalação
+
+1. Clone o repositório:
+
+   ```bash
+   git clone https://github.com/ataldaste/smartcity-PWFE.git
+   cd smartcity-PWFE
+   ```
+
+2. Instale as dependências:
+
+   ```bash
+   npm install
+   ```
+
+3. Inicie o servidor de desenvolvimento:
+
+   ```bash
+   npm run dev
+   ```
+
+   A aplicação estará disponível em `http://localhost:5173`.
+
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Consulte o arquivo [LICENSE](LICENSE) para mais detalhes.

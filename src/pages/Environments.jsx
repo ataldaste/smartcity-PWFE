@@ -6,22 +6,41 @@ export default function Environments() {
   const [ambientes, setAmbientes] = useState([]);
   const [form, setForm] = useState({
     sig: "",
-    nome: "",
-    localizacao: "",
     descricao: "",
     ni: "",
-    responsavel: "",
+    responsavel: ""
+  });
+  const [filters, setFilters] = useState({
+    sig: "",
+    descricao: "",
   });
   const [editId, setEditId] = useState(null);
 
   const fetchAmbientes = async () => {
-    const response = await api.get("/ambientes/");
+    const params = new URLSearchParams();
+    for (const key in filters) {
+      if (filters[key]) {
+        params.append(`${key}__icontains`, filters[key]);
+      }
+    }
+    const response = await api.get(`/ambientes/?${params.toString()}`);
     setAmbientes(response.data);
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
   };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    const newFilters = { ...filters, [name]: value };
+    setFilters(newFilters);
+  };
+
+  useEffect(() => {
+    fetchAmbientes();
+  }, [filters]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,14 +49,7 @@ export default function Environments() {
     } else {
       await api.post("/ambientes/", form);
     }
-    setForm({
-      sig: "",
-      nome: "",
-      localizacao: "",
-      descricao: "",
-      ni: "",
-      responsavel: "",
-    });
+    setForm({ sig: "", descricao: "", ni: "", responsavel: "" });
     setEditId(null);
     fetchAmbientes();
   };
@@ -52,11 +64,7 @@ export default function Environments() {
     fetchAmbientes();
   };
 
-  useEffect(() => {
-    fetchAmbientes();
-  }, []);
-
-   return (
+  return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
@@ -66,9 +74,26 @@ export default function Environments() {
           <div className="space-y-6">
             <div className="pb-4">
               <h1 className="text-3xl font-bold text-gray-900">Ambientes</h1>
-              <p className="text-gray-500 mt-1">
-                {ambientes.length} ambientes cadastrados
-              </p>
+              <p className="text-gray-500 mt-1">{ambientes.length} ambientes encontrados</p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
+                <input
+                  type="text"
+                  name="sig"
+                  placeholder="Pesquisar por Sigla"
+                  value={filters.sig}
+                  onChange={handleFilterChange}
+                  className="px-4 py-2 border rounded-lg"
+                />
+                <input
+                  type="text"
+                  name="descricao"
+                  placeholder="Pesquisar por Nome"
+                  value={filters.descricao}
+                  onChange={handleFilterChange}
+                  className="px-4 py-2 border rounded-lg"
+                />
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -79,7 +104,7 @@ export default function Environments() {
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{a.nome}</h3>
+                      <h3 className="font-semibold text-gray-900">{a.descricao}</h3>
                       <p className="text-sm text-gray-500 mt-1">{a.sig}</p>
                     </div>
                     <div className="flex space-x-2">
@@ -98,7 +123,7 @@ export default function Environments() {
                     </div>
                   </div>
                   <div className="mt-3 text-sm text-gray-600">
-                    <p>Local: {a.localizacao}</p>
+                    <p>Local: {a.ni}</p>
                     <p className="mt-1">Responsável: {a.responsavel}</p>
                   </div>
                 </div>
@@ -111,12 +136,10 @@ export default function Environments() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">
               {editId ? "Editar Ambiente" : "Novo Ambiente"}
             </h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Sigla
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sigla</label>
                 <input
                   name="sig"
                   value={form.sig}
@@ -127,12 +150,10 @@ export default function Environments() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome do Ambiente
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Ambiente</label>
                 <input
-                  name="nome"
-                  value={form.nome}
+                  name="descricao"
+                  value={form.descricao}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
@@ -140,12 +161,10 @@ export default function Environments() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Localização
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Localização</label>
                 <input
-                  name="localizacao"
-                  value={form.localizacao}
+                  name="ni"
+                  value={form.ni}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
@@ -153,9 +172,7 @@ export default function Environments() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Responsável
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Responsável</label>
                 <input
                   name="responsavel"
                   value={form.responsavel}

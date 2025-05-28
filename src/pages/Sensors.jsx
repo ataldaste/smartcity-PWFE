@@ -14,9 +14,20 @@ export default function Sensors() {
     ambiente: "",
   });
   const [editId, setEditId] = useState(null);
+  const [filters, setFilters] = useState({
+    id: "",
+    tipo: "",
+    status: "",
+    ambiente__sig: "",
+    unidade_medida: ""
+  });
 
   const fetchData = async () => {
-    const sensoresRes = await api.get("/sensores/");
+    const params = new URLSearchParams();
+    for (const key in filters) {
+      if (filters[key]) params.append(key, filters[key]);
+    }
+    const sensoresRes = await api.get(`/sensores/?${params.toString()}`);
     const ambientesRes = await api.get("/ambientes/");
     setSensores(sensoresRes.data);
     setAmbientes(ambientesRes.data);
@@ -24,6 +35,10 @@ export default function Sensors() {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -57,9 +72,9 @@ export default function Sensors() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [filters]);
 
-    return (
+  return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
@@ -70,13 +85,62 @@ export default function Sensors() {
             <div className="pb-4">
               <h1 className="text-3xl font-bold text-gray-900">Sensores</h1>
               <p className="text-gray-500 mt-1">
-                {sensores.length} sensores cadastrados
+                {sensores.length} sensores encontrados
               </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
+                <input
+                  type="text"
+                  name="id"
+                  placeholder="ID"
+                  value={filters.id}
+                  onChange={handleFilterChange}
+                  className="px-4 py-2 border rounded-lg"
+                />
+                <select
+                  name="tipo"
+                  value={filters.tipo}
+                  onChange={handleFilterChange}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  <option value="">Todos os Tipos</option>
+                  <option value="temperatura">Temperatura</option>
+                  <option value="luminosidade">Luminosidade</option>
+                  <option value="umidade">Umidade</option>
+                  <option value="contador">Contador</option>
+                </select>
+                <select
+                  name="status"
+                  value={filters.status}
+                  onChange={handleFilterChange}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  <option value="">Todos os Status</option>
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                </select>
+                <input
+                  type="text"
+                  name="ambiente__sig"
+                  placeholder="Sig do Ambiente"
+                  value={filters.ambiente__sig}
+                  onChange={handleFilterChange}
+                  className="px-4 py-2 border rounded-lg"
+                />
+                <input
+                  type="text"
+                  name="unidade_medida"
+                  placeholder="Unidade de Medida"
+                  value={filters.unidade_medida}
+                  onChange={handleFilterChange}
+                  className="px-4 py-2 border rounded-lg"
+                />
+              </div>
             </div>
 
             <div className="space-y-4">
               {sensores.map((s) => (
-                <div 
+                <div
                   key={s.id}
                   className="bg-white p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow"
                 >
@@ -123,7 +187,7 @@ export default function Sensors() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">
               {editId ? "Editar Sensor" : "Novo Sensor"}
             </h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -212,7 +276,7 @@ export default function Sensors() {
                   <option value="">Selecione um ambiente</option>
                   {ambientes.map((a) => (
                     <option key={a.id} value={a.id}>
-                      {a.sig} - {a.nome}
+                      {a.sig} - {a.nome || a.descricao}
                     </option>
                   ))}
                 </select>

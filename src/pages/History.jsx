@@ -28,13 +28,13 @@ export default function History() {
     setLoading(true);
     try {
       const params = {
-        'sensor__id': filters.sensor_id,
-        'sensor__ambiente__sig': filters.ambiente_sig,
-        'sensor__tipo': filters.tipo_sensor,
-        'timestamp_after': filters.data_inicio,
-        'timestamp_before': filters.data_fim
+        'sensor__id': filters.sensor_id || undefined,
+        'sensor__ambiente__sig': filters.ambiente_sig || undefined,
+        'sensor__tipo': filters.tipo_sensor || undefined,
+        'timestamp__gte': filters.data_inicio || undefined,
+        'timestamp__lte': filters.data_fim || undefined
       };
-      
+
       const res = await api.get("/historicos/", { params });
       setDados(res.data);
     } catch (error) {
@@ -91,17 +91,17 @@ export default function History() {
               type="text"
               placeholder="ID do Sensor"
               className="p-2 border rounded focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setFilters({...filters, sensor_id: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, sensor_id: e.target.value })}
             />
             <input
               type="text"
               placeholder="Código Ambiente"
               className="p-2 border rounded focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setFilters({...filters, ambiente_sig: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, ambiente_sig: e.target.value })}
             />
             <select
               className="p-2 border rounded focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setFilters({...filters, tipo_sensor: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, tipo_sensor: e.target.value })}
             >
               <option value="">Todos os Tipos</option>
               <option value="temperatura">Temperatura</option>
@@ -111,12 +111,12 @@ export default function History() {
             <input
               type="date"
               className="p-2 border rounded focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setFilters({...filters, data_inicio: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, data_inicio: e.target.value })}
             />
             <input
               type="date"
               className="p-2 border rounded focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setFilters({...filters, data_fim: e.target.value})}
+              onChange={(e) => setFilters({ ...filters, data_fim: e.target.value })}
             />
           </div>
 
@@ -211,7 +211,7 @@ export default function History() {
                       fill="url(#colorValor)"
                     />
 
-                    {/* Linha de Média (exemplo) */}
+                    {/* Linha de Média (opcional) */}
                     <Line
                       name="Média Histórica"
                       type="monotone"

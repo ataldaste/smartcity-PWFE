@@ -17,9 +17,9 @@ const getStatusGlow = (status) => ({
   normal: 'rgba(16,185,129,0.3)'
 }[status] || 'rgba(107,114,128,0.3)');
 
-const createIcon = (type, status) => L.divIcon({
+const createIcon = (type, status, isSelected = false) => L.divIcon({
   className: 'custom-icon',
-  html: `<div style="background-color: ${getSensorColor(type, status)}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid blue; box-shadow: 0 0 8px ${getStatusGlow(status)};"></div>`
+  html: `<div style="background-color: ${getSensorColor(type, status)}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid ${isSelected ? 'black' : 'blue'}; box-shadow: 0 0 8px ${getStatusGlow(status)};"></div>`
 });
 
 export default function Home() {
@@ -28,6 +28,7 @@ export default function Home() {
   const [selectedSensor, setSelectedSensor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
+  const [erro, setErro] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,9 +40,11 @@ export default function Home() {
         setSensors(sensorsRes.data);
         setHistoricos(historicosRes.data);
         setStats(calculateStats(historicosRes.data, sensorsRes.data));
+        setErro(false);
         setLoading(false);
       } catch (err) {
         console.error("Erro ao buscar dados:", err);
+        setErro(true);
         setLoading(false);
       }
     };
@@ -113,18 +116,20 @@ export default function Home() {
   });
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50" role="main">
       <Navbar />
+      <h1 className="sr-only">Página Inicial - Monitoramento de Sensores</h1>
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 p-4">
-        
+
         {/* Métricas Globais */}
         <div className="lg:col-span-1 space-y-4">
-          <div className="bg-white rounded-xl p-4 shadow-lg">
+          <div className="bg-white rounded-xl p-4 shadow-lg" aria-label="Métricas Globais dos Sensores">
             <h2 className="text-xl font-bold mb-4">Métricas Globais</h2>
+            {erro && <p className="text-red-600">Erro ao carregar dados. Tente novamente mais tarde.</p>}
             <div className="space-y-4">
               {['temperatura', 'umidade', 'luminosidade', 'contador'].map((type) => (
                 <div key={type} className="p-3 rounded-lg border-l-4"
-                     style={{ borderColor: getChartColor(type) }}>
+                     style={{ borderColor: getChartColor(type) }} title={`Status médio do sensor de ${type}`}>
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-sm text-gray-500 capitalize">{type}</p>
@@ -143,10 +148,10 @@ export default function Home() {
         </div>
 
         {/* Mapa */}
-        <div className="lg:col-span-2 h-[60vh] lg:h-auto relative rounded-xl overflow-hidden shadow-lg">
+        <div className="lg:col-span-2 h-[60vh] lg:h-auto relative rounded-xl overflow-hidden shadow-lg" aria-label="Mapa Interativo com Sensores">
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" role="status" aria-label="Carregando mapa"></div>
             </div>
           ) : (
             <MapContainer
@@ -154,6 +159,7 @@ export default function Home() {
               zoom={18}
               className="h-full w-full"
               preferCanvas={true}
+              aria-label="Mapa de localização dos sensores"
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -165,29 +171,10 @@ export default function Home() {
                   <Marker
                     key={sensor.id}
                     position={[sensor.latitude, sensor.longitude]}
-                    icon={createIcon(sensor.tipo, sensor.status)}
+                    icon={createIcon(sensor.tipo, sensor.status, selectedSensor?.id === sensor.id)}
                     eventHandlers={{ click: () => setSelectedSensor(sensor) }}
                   >
-                    <Popup className="text-sm min-w-[200px]">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-bold">{sensor.tipo.toUpperCase()} ({sensor.mac_address})</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs ${getStatusClass(sensor.status)}`}>
-                            {sensor.status}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="bg-gray-50 p-2 rounded">
-                            <p className="text-gray-500">Valor</p>
-                            <p className="font-medium">{valorAtual != null ? `${valorAtual}${getUnit(sensor.tipo)}` : '—'}</p>
-                          </div>
-                          <div className="bg-gray-50 p-2 rounded">
-                            <p className="text-gray-500">Ambiente</p>
-                            <p className="font-medium">{sensor.ambiente}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </Popup>
+                    <Popup className="text-sm min-w-[200px]" aria-label={`Informações do sensor ${sensor.mac_address}`}>...</Popup>
                   </Marker>
                 );
               })}
@@ -198,16 +185,19 @@ export default function Home() {
         {/* Detalhes */}
         <div className="lg:col-span-1 space-y-4">
           {selectedSensor ? (
-            <div className="bg-white p-4 rounded-xl shadow-lg">
+            <div className="bg-white p-4 rounded-xl shadow-lg" aria-label="Detalhes do sensor selecionado">
               <h3 className="font-bold text-xl">{selectedSensor.tipo.toUpperCase()} ({selectedSensor.mac_address})</h3>
               <p className="text-sm text-gray-500">Ambiente: {selectedSensor.ambiente}</p>
               <p className="text-lg mt-2">
                 Valor: {latestValues[selectedSensor.id]?.valor ?? '-'}{getUnit(selectedSensor.tipo)}
               </p>
+              <button className="mt-4 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300" onClick={() => setSelectedSensor(null)}>
+                Limpar seleção
+              </button>
             </div>
           ) : (
-            <div className="bg-white p-4 rounded-xl shadow-lg">
-              <p className="text-gray-500">Selecione um sensor para visualizar detalhes</p>
+            <div className="bg-white p-4 rounded-xl shadow-lg" aria-label="Mensagem de instrução">
+              <p className="text-gray-500">Selecione um sensor no mapa para visualizar detalhes.</p>
             </div>
           )}
         </div>
